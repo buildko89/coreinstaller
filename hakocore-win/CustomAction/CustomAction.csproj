@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="hakoCoreCleanup.cs" />
     <Compile Include="Installer1.cs">
       <SubType>Component</SubType>
     </Compile>

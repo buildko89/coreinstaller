@@ -6,6 +6,9 @@ using System.Configuration.Install;
 using System.Linq;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using hakoCoreInstaller.Helpers;
+
 
 namespace CustomAction
 {
@@ -130,6 +133,12 @@ namespace CustomAction
     {
       //修復動作
       base.Rollback(savedState);
+
+      string installPath = this.Context.Parameters["InstallPath"];
+      hakoCoreEnvCleanup.RemoveHakoniwaEnvironmentVariables(installPath);
+
+
+
 #if DEBUG
       System.Windows.Forms.MessageBox.Show("Rollback");
 #endif
@@ -142,29 +151,8 @@ namespace CustomAction
       base.Uninstall(savedState);
 
       // 環境変数PATHを編集
-      string currentPath;
-      currentPath = System.Environment.GetEnvironmentVariable("path", System.EnvironmentVariableTarget.User);
       string installPath = this.Context.Parameters["InstallPath"];
-      string path = installPath + @"\bin;";
-      currentPath = currentPath.Replace(path, "");
-
-      // 環境変数PATHから削除する
-      System.Environment.SetEnvironmentVariable("path", currentPath, System.EnvironmentVariableTarget.User);
-
-      // hakoniwa core関連のPATHを削除する
-      System.Environment.SetEnvironmentVariable("HAKOCORE_LIB_PATH", "", System.EnvironmentVariableTarget.User);
-      System.Environment.SetEnvironmentVariable("HAKO_CONFIG_PATH", "", System.EnvironmentVariableTarget.User);
-
-      // PYTHONPATHから箱庭コア関連を消す
-      string pythonPath = System.Environment.GetEnvironmentVariable("PYTHONPATH", System.EnvironmentVariableTarget.User);
-      string hakopypath = installPath + @"\lib\py;";
-      pythonPath = pythonPath.Replace(hakopypath, "");
-
-#if DEBUG
-      System.Windows.Forms.MessageBox.Show(hakopypath);
-#endif
-      // PYTHONPATHから箱庭コア関連を削除
-      System.Environment.SetEnvironmentVariable("PYTHONPATH", pythonPath, System.EnvironmentVariableTarget.User);
+      hakoCoreEnvCleanup.RemoveHakoniwaEnvironmentVariables(installPath);
 
 #if DEBUG
       System.Windows.Forms.MessageBox.Show("Uninstall");
