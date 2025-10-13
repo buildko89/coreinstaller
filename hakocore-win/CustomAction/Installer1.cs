@@ -27,6 +27,18 @@ namespace CustomAction
       string installPath = this.Context.Parameters["InstallPath"];
       string path = installPath + @"\bin;";
 
+      // Python環境の確認とhakoniwa-pduのインストール
+      if (PowerShellExecutor.IsPipAvailable())
+      {
+        PowerShellExecutor.RunCommand("python -m pip install hakoniwa-pdu");
+      }
+      else
+      {
+        // 例外をスローしてインストールを失敗させる
+        throw new InstallException("pythonまたはpipがインストールされていません。Python環境を確認してください！！");
+      }
+
+
 #if DEBUG
       System.Windows.Forms.MessageBox.Show(installPath);
 #endif
@@ -83,39 +95,6 @@ namespace CustomAction
 #if DEBUG
       System.Windows.Forms.MessageBox.Show("Install");
 #endif
-
-      // hakoniwa-pduのpip installを実行
-      try
-      {
-        var psi = new System.Diagnostics.ProcessStartInfo();
-        psi.FileName = "powershell.exe";
-        psi.Arguments = "-NoProfile -ExecutionPolicy Bypass -Command \"python -m pip install hakoniwa-pdu\"";
-        psi.UseShellExecute = false;
-        psi.RedirectStandardOutput = true;
-        psi.RedirectStandardError = true;
-        psi.CreateNoWindow = true;
-        psi.EnvironmentVariables["PATH"] = System.Environment.GetEnvironmentVariable("PATH", System.EnvironmentVariableTarget.User);
-
-        using (var process = System.Diagnostics.Process.Start(psi))
-        {
-          string output = process.StandardOutput.ReadToEnd();
-          string error = process.StandardError.ReadToEnd();
-          process.WaitForExit();
-
-          if (!string.IsNullOrEmpty(error))
-          {
-            System.Windows.Forms.MessageBox.Show("pip install エラー:\n" + error, "エラー", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-          }
-          else
-          {
-            System.Windows.Forms.MessageBox.Show("pip install 成功:\n" + output, "成功", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
-          }
-        }
-      }
-      catch (Exception ex)
-      {
-        System.Windows.Forms.MessageBox.Show("PowerShell 実行例外:\n" + ex.Message, "例外", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-      }
     }
 
     // インストールの状態を変更する動作関数
